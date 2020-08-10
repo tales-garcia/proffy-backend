@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "ISC",
   "scripts": {
-    "start": "node src/server.ts"
+    "start": "node src/server.js"
   },
   "devDependencies": {},
   "dependencies": {
