@@ -11,4 +11,5 @@ app.use(bodyParser.urlencoded({ extended: false }));
 //app.use(routes);
 
 require('./controllers/AuthController')(app);
+require('./controllers/UserDataController')(app);
 app.listen(3333);

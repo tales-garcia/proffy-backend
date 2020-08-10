@@ -4,6 +4,7 @@ const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const authConfig = require('../config/auth.json');
+const UserData = require('../models/userData');
 
 const router = express.Router();
 
@@ -22,9 +23,14 @@ router.post('/users', async (req, res) => {
         const user = await User.create(req.body);
         user.password = undefined;
 
+        await UserData.create({
+            userId: user.id
+        });
+
         const token = generateAccessToken({ id: user.id });
         return res.status(201).send({status: "Registro efetuado com sucesso!", user, token});
     } catch (e) {
+        console.log(e)
         return res.status(500).send({ status: 'Não foi possível efetuar o registro.' })
     }
 });
@@ -51,14 +57,6 @@ router.get('/login', async (req, res) => {
         return res.status(500).send({ status: 'Não foi possível efetuar o Login.' })
     }
 });
-
-// router.get('/userdata', async (req, res) => {
-//     try {
-        
-//     } catch (e) {
-//         return res.status(500).send({ status: 'Não foi possível buscar suas informações.' })
-//     }
-// });
 
 
 

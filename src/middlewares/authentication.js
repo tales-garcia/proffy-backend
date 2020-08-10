@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const authConfig = require('../config/auth.json');
 
-module.exports = (req, res) => {
+module.exports = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if(!authHeader) {
@@ -9,14 +9,12 @@ module.exports = (req, res) => {
     }
 
     const parts = authHeader.split(' ');
-
-    if(parts.lenght != 2) {
+    if(parts.length !== 2) {
         return res.status(401).send({ err: 'Token error' })
     }
 
     const [scheme, token] = parts;
-
-    if(!/ˆBearer$/i.test(scheme)) {
+    if(/ˆbearer/.test(scheme)) {
         return res.status(401).send({ err: 'malformatted Token' })
     }
 
