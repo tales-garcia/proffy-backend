@@ -17,6 +17,20 @@ const UserSchema = new mongoose.Schema({
         required: true,
         select: false
     },
+    avatar: {
+        type: String,
+        required: false,
+        default: ''
+    },
+    whatsapp: {
+        type: String,
+        required: true
+    },
+    bio: {
+        type: String,
+        required: false,
+        default: ''
+    },
     createdAt: {
         type: Date,
         default: Date.now

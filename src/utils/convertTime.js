@@ -6,4 +6,4 @@ function convertHoursToMinutes(time) {
     return (hours * 60) + minutes;
 }
 
-export default convertHoursToMinutes;
+module.exports = convertHoursToMinutes;

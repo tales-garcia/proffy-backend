@@ -1,109 +1,56 @@
-import { Request, Response } from 'express';
+const express = require('express');
+const auth = require('../middlewares/authentication');
+const Class = require('../models/class');
+const convertHoursToMinutes = require('../utils/convertTime');
 
-import db from '../database/connection';
-import convertHoursToMinutes from '../utils/convertTime';
+const router = express.Router();
+router.use(auth);
 
-export default class ClassesController {
+router.get('/data', async (req, res) => {
+    const {week_day, subject, time} = req.query;
+    try {
+        let classesData = await Class.find();
+        if(week_day) {
+            classesData = classesData.filter(classItem => {
+                return classItem.schedules.some(schedule => JSON.parse(week_day) === schedule.week_day);
+            })
+        }
+        if(subject) {
+            classesData = classesData.filter(classItem => {
+                return classItem.subject === subject;
+            })
+        }
+        if(time) {
+            classesData = classesData.filter(classItem => {
+                return classItem.schedules.some(schedule => {
+                    if(week_day) {
+                        if(schedule.week_day === JSON.parse(week_day)) {
+                            return convertHoursToMinutes(time) >= schedule.from && convertHoursToMinutes(time) < schedule.to;
+                        } else {
+                            return false;
+                        }
+                    }
+                    return convertHoursToMinutes(time) >= schedule.from && convertHoursToMinutes(time) < schedule.to;
+                });
+            })    
+        }
 
-    async index(req, res) {
-        // const { week_day, subject, time } = req.query;
-
-        // console.log(week_day, subject, time)
-
-        // const minutes = convertHoursToMinutes(time as string);
-        
-        // const classes = await db('classes')
-        //     .whereExists(function() {
-        //         if(week_day && minutes) {
-        //             this.select('classes_schedules.*')
-        //                 .from('classes_schedules')
-        //                 .whereRaw('`classes_schedules`.`class_id` = `classes`.`id`')
-        //                 .whereRaw('`classes_schedules`.`week_day` = ??', [Number(week_day)])
-        //                 .whereRaw('`classes_schedules`.`from` <= ??', [minutes])
-        //                 .whereRaw('`classes_schedules`.`to` > ??', [minutes]);
-        //         } else if(week_day && !minutes) {
-        //             this.select('classes_schedules.*')
-        //                 .from('classes_schedules')
-        //                 .whereRaw('`classes_schedules`.`class_id` = `classes`.`id`')
-        //                 .whereRaw('`classes_schedules`.`week_day` = ??', [Number(week_day)])
-        //         } else if(minutes && !week_day) {
-        //             this.select('classes_schedules.*')
-        //                 .from('classes_schedules')
-        //                 .whereRaw('`classes_schedules`.`class_id` = `classes`.`id`')
-        //                 .whereRaw('`classes_schedules`.`from` <= ??', [minutes])
-        //                 .whereRaw('`classes_schedules`.`to` > ??', [minutes]);
-        //         } else if(!minutes && !week_day) {
-        //             this.select('classes_schedules.*')
-        //                 .from('classes_schedules')
-        //                 .whereRaw('`classes_schedules`.`class_id` = `classes`.`id`')
-        //         }
-        //     })
-        //     .where("classes.subject", subject ? "=" :">=", subject ? subject as string : '')
-        //     .join('users', 'classes.user_id', '=', 'users.id')
-        //     .join('classes_schedules', 'classes.id', '=', 'classes_schedules.class_id')
-        //     .select([
-        //         'classes.*',
-        //         'users.*'
-        //     ])
-        //     .catch(console.log);
-            
-
-        // return res.json(classes);
+        return res.status(200).send({ status: 'As suas incormações foram buscadas com sucesso!', classesData })
+    } catch (e) {
+        console.log(e)
+        return res.status(500).send({ status: 'Não foi possível buscar suas informações.' })
     }
+});
 
-    async create(req, res) {
-        // const {
-        //     name,
-        //     avatar,
-        //     whatsapp,
-        //     bio,
-        //     subject,
-        //     cost,
-        //     schedules
-        // } = req.body;
-    
-        // const trx = await db.transaction();
-    
-        // try {
-        //     const insertedUsersId = await trx('users').insert({
-        //         name,
-        //         avatar,
-        //         whatsapp,
-        //         bio
-        //     });
-        
-        //     const user_id = insertedUsersId[0];
-        
-        //     const insertedClassesIds = await trx('classes').insert({
-        //         subject,
-        //         cost,
-        //         user_id
-        //     });
-        
-        //     const class_id = insertedClassesIds[0];
-        
-        //     const schedulesToInsert = schedules.map((scheduleItem : ScheduleItem) => {
-        //         return {
-        //             week_day: scheduleItem.week_day,
-        //             from: convertHoursToMinutes(scheduleItem.from),
-        //             to: convertHoursToMinutes(scheduleItem.to),
-        //             class_id
-        //         }
-        //     });
-        
-        //     await trx('classes_schedules').insert(schedulesToInsert);
-        
-        //     await trx.commit();
-            
-        //     return res.status(201).send();
-        // } catch(exc) {
-        //     await trx.rollback();
+router.post('/register', async (req, res) => {
+    try {
+        const classesData = await Class.create(req.body);
 
-        //     console.log(exc)
-    
-        //     return res.status(400).json({
-        //         err: 'Unexpected error while uploading data'
-        //     });
-        // }
+        return res.status(200).send({ status: 'As suas incormações foram buscadas com sucesso!', classesData })
+    } catch (e) {
+        console.log(e)
+        return res.status(500).send({ status: 'Não foi possível buscar suas informações.' })
     }
-}
+});
+
+module.exports = app => app.use('/classes', router);

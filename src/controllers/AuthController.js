@@ -4,7 +4,6 @@ const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const authConfig = require('../config/auth.json');
-const UserData = require('../models/userData');
 
 const router = express.Router();
 
@@ -22,10 +21,6 @@ router.post('/users', async (req, res) => {
         }
         const user = await User.create(req.body);
         user.password = undefined;
-
-        await UserData.create({
-            userId: user.id
-        });
 
         const token = generateAccessToken({ id: user.id });
         return res.status(201).send({status: "Registro efetuado com sucesso!", user, token});
