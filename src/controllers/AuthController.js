@@ -32,7 +32,8 @@ router.post('/users', async (req, res) => {
 
 
 router.get('/login', async (req, res) => {
-    const { email, password } = req.body;
+    console.log(res.token)
+    const { email, password } = req.query;
     try {
         const user = await User.findOne({ email }).select('+password');
 
@@ -41,15 +42,34 @@ router.get('/login', async (req, res) => {
                 user.password = undefined;
 
                 const token = generateAccessToken({ id: user.id });
-                return res.status(200).send({ status: 'Login efetuado com sucesso!', user, token })
+                return res.send({ status: 200, message: 'Login efetuado com sucesso!', user, token })
             } else {
-                return res.status(400).send({ status: 'Senha incorreta' })
+                return res.send({ status: 400, message: 'Senha incorreta' })
             }
         } else {
-            return res.status(404).send({ status: 'Não existe nenhum usuário com esse E-mail.' });
+            return res.send({ status: 404, message: 'Não existe nenhum usuário com esse E-mail.' });
         }
     } catch (e) {
-        return res.status(500).send({ status: 'Não foi possível efetuar o Login.' })
+        return res.send({ status: 500, message: 'Não foi possível efetuar o Login.' })
+    }
+});
+
+router.get('/login/:token', async (req, res) => {
+    try {
+        let userId;
+        const token = req.params.token;
+        jwt.verify(token, authConfig.secret, (err, decoded) => {
+            if(err) return res.send({ status: 401 });
+            userId = decoded.id;
+        });
+        const user = await User.findOne({ _id: userId });
+        if(!user)
+            return res.send({ status: 404 })
+
+        return res.send({ status: 200, user })
+    } catch (e) {
+        console.log(e);
+        return res.send({ status: 500, message: 'Não foi possível efetuar o Login.' })
     }
 });
 

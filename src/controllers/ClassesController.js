@@ -1,10 +1,8 @@
 const express = require('express');
-const auth = require('../middlewares/authentication');
 const Class = require('../models/class');
 const convertHoursToMinutes = require('../utils/convertTime');
 
 const router = express.Router();
-router.use(auth);
 
 router.get('/data', async (req, res) => {
     const {week_day, subject, time} = req.query;
