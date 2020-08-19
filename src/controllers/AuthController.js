@@ -32,7 +32,6 @@ router.post('/users', async (req, res) => {
 
 
 router.get('/login', async (req, res) => {
-    console.log(res.token)
     const { email, password } = req.query;
     try {
         const user = await User.findOne({ email }).select('+password');
@@ -44,10 +43,10 @@ router.get('/login', async (req, res) => {
                 const token = generateAccessToken({ id: user.id });
                 return res.send({ status: 200, message: 'Login efetuado com sucesso!', user, token })
             } else {
-                return res.send({ status: 400, message: 'Senha incorreta' })
+                return res.send({ status: 400, message: 'Senha incorreta', errorField: 'password' })
             }
         } else {
-            return res.send({ status: 404, message: 'Não existe nenhum usuário com esse E-mail.' });
+            return res.send({ status: 404, message: 'Não existe nenhum usuário com esse E-mail.', errorField: 'email' });
         }
     } catch (e) {
         return res.send({ status: 500, message: 'Não foi possível efetuar o Login.' })
@@ -69,7 +68,7 @@ router.get('/login/:token', async (req, res) => {
         return res.send({ status: 200, user })
     } catch (e) {
         console.log(e);
-        return res.send({ status: 500, message: 'Não foi possível efetuar o Login.' })
+        return res.send({ status: 500 })
     }
 });
 
